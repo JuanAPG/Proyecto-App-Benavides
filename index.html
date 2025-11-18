@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Médico - Farmacias Benavides</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --blue-dark: #003399;
+      --blue-light: #e5f4ff;
+      --blue-mid: #003f8c;
+      --red-main: #ff2b2b;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --white: #ffffff;
+      --shadow-soft: 0 8px 16px rgba(0, 0, 0, 0.08);
+      --radius-lg: 18px;
+      --radius-round: 999px;
+      --transition-fast: 0.2s ease;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--blue-light);
+      color: var(--text-main);
+    }
+
+    /* Layout general */
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header.app-header {
+      background: var(--blue-dark);
+      color: var(--white);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 120px;
+      height: 32px;
+      background: linear-gradient(90deg, #ff0000, #ff5757);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-logo span {
+      display: block;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .brand-tagline {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #fbbf24;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #1f2933;
+      font-size: 16px;
+    }
+
+    .user-meta {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .user-meta strong {
+      font-size: 13px;
+    }
+
+    main {
+      flex: 1;
+      padding: 14px 10px 24px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Vistas */
+
+    .view {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* DASHBOARD MÉDICO */
+
+    .welcome-title {
+      font-size: 22px;
+      text-align: center;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    .search-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 18px 18px;
+      margin-bottom: 20px;
+    }
+
+    .search-card h2 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .search-input-wrapper {
+      background: var(--blue-dark);
+      border-radius: var(--radius-lg);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-input-wrapper input {
+      border: none;
+      background: transparent;
+      color: #e5e7eb;
+      font-size: 14px;
+      width: 100%;
+      outline: none;
+    }
+
+    .search-input-wrapper input::placeholder {
+      color: #9ca3af;
+    }
+
+    .search-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .section-label {
+      background: var(--red-main);
+      color: var(--white);
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .patient-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .patient-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: center;
+      box-shadow: var(--shadow-soft);
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    .patient-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .patient-initial {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #eff6ff;
+      border: 2px solid var(--blue-mid);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--blue-mid);
+    }
+
+    .patient-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .patient-main-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue-mid);
+    }
+
+    .patient-subinfo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .patient-meta-label {
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .patient-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .btn {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-red {
+      background: var(--red-main);
+      color: var(--white);
+      box-shadow: 0 4px 10px rgba(255, 43, 43, 0.35);
+    }
+
+    .btn-red:hover {
+      background: #e11d2f;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(185, 28, 28, 0.45);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      color: var(--white);
+      padding: 4px 12px;
+      font-size: 11px;
+    }
+
+    .btn-pill-blue {
+      background: var(--blue-mid);
+      color: var(--white);
+      font-size: 11px;
+      padding: 4px 10px;
+    }
+
+    .pill-badge {
+      font-size: 11px;
+      background: #f3f4f6;
+      padding: 2px 8px;
+      border-radius: 999px;
+      color: #4b5563;
+    }
+
+    /* VISTA DETALLE */
+
+    .detail-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .detail-back-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: none;
+      background: var(--blue-mid);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+      box-shadow: 0 4px 10px rgba(0, 63, 140, 0.35);
+    }
+
+    .detail-back-btn:hover {
+      background: #002e66;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.5);
+    }
+
+    .detail-title-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .detail-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #fee2e2;
+      border: 3px solid var(--red-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 700;
+      color: #b91c1c;
+    }
+
+    .detail-patient-name {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .detail-code {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .section-bar-red {
+      background: var(--red-main);
+      color: var(--white);
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-block;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+
+    .medical-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .medical-column {
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .info-row-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .info-row-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 10px 14px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+    }
+
+    .history-item span.title {
+      font-weight: 600;
+    }
+
+    .history-item span.subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .history-item-arrow {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--blue-dark);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .history-item:hover {
+      transform: translateY(-1px);
+      background: #f9fafb;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    /* RESPONSIVE */
+
+    @media (min-width: 768px) {
+      main {
+        padding: 18px 20px 32px;
+      }
+
+      .welcome-title {
+        font-size: 24px;
+      }
+
+      .app-layout-desktop {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .view-dashboard-desktop {
+        display: block;
+      }
+
+      .view-detail-desktop {
+        display: block;
+      }
+
+      /* Para escritorio mostramos ambas vistas lado a lado */
+      #view-dashboard, #view-detail {
+        display: block;
+      }
+
+      #view-detail.hidden-desktop {
+        display: none;
+      }
+
+      .medical-card {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .history-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <span>benavides</span>
+        </div>
+        <div class="brand-tagline">
+          Sentirte acompañado, es sentirte mejor.
+        </div>
+      </div>
+
+      <div class="user-chip">
+        <div class="user-avatar">J</div>
+        <div class="user-meta">
+          <strong>Juan Ángel</strong>
+          <span>Médico Clínico</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Layout escritorio: dos columnas -->
+      <div class="app-layout-desktop">
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="view active">
+          <h1 class="welcome-title">¡Bienvenido, Juan Ángel!</h1>
+
+          <div class="search-card">
+            <h2>Buscar pacientes</h2>
+            <div class="search-input-wrapper">
+              <input id="searchInput" type="text" placeholder="Escribir..." />
+              <div class="search-icon">🔍</div>
+            </div>
+          </div>
+
+          <span class="section-label">Mis pacientes</span>
+
+          <div class="patient-list" id="patientList">
+            <!-- Paciente 1 -->
+            <article class="patient-card" data-patient-id="1">
+              <div class="patient-initial">F</div>
+              <div class="patient-main">
+                <div class="patient-main-title">
+                  P_10_09_2025_001 - Fernando Olivares del Valle
+                </div>
+                <div class="patient-subinfo">
+                  <span><span class="patient-meta-label">Edad:</span> 21 años</span>
+                  <span><span class="patient-meta-label">Próxima visita:</span> 8 oct 2025</span>
+                  <span><span class="patient-meta-label">Sexo:</span> Masculino</span>
+                </div>
+              </div>
+              <div class="patient-actions">
+                <button class="btn btn-red">
+                  Ver Detalles
+                  <span>›</span>
+                </button>
+                <span class="pill-badge">Paciente activo</span>
+              </div>
+            </article>
+
+            <!-- Paciente 2 (demo, datos similares) -->
+            <article class="patient-card" data-patient-id="2">
+              <div class="patient-initial">F</div>
+              <div class="patient-main">
+                <div class="patient-main-title">
+                  P_10_09_2025_002 - Fernando Olivares del Valle
+                </div>
+                <div class="patient-subinfo">
+                  <span><span class="patient-meta-label">Edad:</span> 21 años</span>
+                  <span><span class="patient-meta-label">Próxima visita:</span> 8 oct 2025</span>
+                  <span><span class="patient-meta-label">Sexo:</span> Masculino</span>
+                </div>
+              </div>
+              <div class="patient-actions">
+                <button class="btn btn-red">
+                  Ver Detalles
+                  <span>›</span>
+                </button>
+                <span class="pill-badge">En tratamiento</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- DETALLE DEL PACIENTE -->
+        <section id="view-detail" class="view">
+          <div class="detail-layout">
+            <div class="detail-header-row">
+              <button id="btnBackMobile" class="detail-back-btn">
+                ← Volver
+              </button>
+              <span style="font-size:11px;color:#6b7280;">Detalles - MÉDICO</span>
+            </div>
+
+            <div class="detail-title-card">
+              <div class="detail-avatar" id="detailAvatar">
+                F
+              </div>
+              <div class="detail-patient-name" id="detailName">
+                001 - Fernando Olivares del Valle
+              </div>
+              <div class="detail-code" id="detailCode">
+                CURP: VFOZ60704HCHLVNA0
+              </div>
+              <span class="section-bar-red">Ficha médica</span>
+            </div>
+
+            <div class="medical-card">
+              <div class="medical-column">
+                <div>
+                  <div class="info-row-label">Nombre</div>
+                  <div class="info-row-value" id="infoNombre">Fernando</div>
+                </div>
+                <div>
+                  <div class="info-row-label">Apellidos</div>
+                  <div class="info-row-value" id="infoApellidos">
+                    Olivares del Valle
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row-label">Edad</div>
+                  <div class="info-row-value" id="infoEdad">21 años</div>
+                </div>
+                <div>
+                  <div class="info-row-label">Sexo</div>
+                  <div class="info-row-value" id="infoSexo">Masculino</div>
+                </div>
+                <div>
+                  <div class="info-row-label">CURP</div>
+                  <div class="info-row-value" id="infoCurp">
+                    VFOZ60704HCHLVNA0
+                  </div>
+                </div>
+              </div>
+
+              <div class="medical-column">
+                <div>
+                  <div class="info-row-label">Lugar de nacimiento</div>
+                  <div class="info-row-value" id="infoLugar">
+                    Monclova, Coahuila, México
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row-label">Correo</div>
+                  <div class="info-row-value" id="infoCorreo">
+                    fernando.olivaresd@udem.edu
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row-label">Fecha de nacimiento</div>
+                  <div class="info-row-value" id="infoFechaNac">
+                    26 de julio de 2004
+                  </div>
+                </div>
+                <div>
+                  <div class="info-row-label">Peso</div>
+                  <div class="info-row-value" id="infoPeso">80 Kg</div>
+                </div>
+                <div>
+                  <div class="info-row-label">Altura</div>
+                  <div class="info-row-value" id="infoAltura">170 cm</div>
+                </div>
+              </div>
+            </div>
+
+            <span class="section-bar-red">Historial Médico</span>
+
+            <div class="history-grid">
+              <div class="history-item">
+                <div>
+                  <span class="title">Enfermedades crónicas</span><br />
+                  <span class="subtitle">Ver padecimientos registrados</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+
+              <div class="history-item">
+                <div>
+                  <span class="title">Alergias</span><br />
+                  <span class="subtitle">Medicamentos, alimentos, otros</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+
+              <div class="history-item">
+                <div>
+                  <span class="title">Antecedentes familiares</span><br />
+                  <span class="subtitle">Historial de padres y abuelos</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+
+              <div class="history-item">
+                <div>
+                  <span class="title">Tratamientos en curso</span><br />
+                  <span class="subtitle">Medicamentos y dosis actuales</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+
+              <div class="history-item">
+                <div>
+                  <span class="title">Cirugías previas</span><br />
+                  <span class="subtitle">Procedimientos y fechas</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+
+              <div class="history-item">
+                <div>
+                  <span class="title">Ver todo</span><br />
+                  <span class="subtitle">Historial clínico completo</span>
+                </div>
+                <div class="history-item-arrow">›</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Datos demo de pacientes
+    const patients = {
+      1: {
+        id: "001",
+        nombre: "Fernando",
+        apellidos: "Olivares del Valle",
+        edad: "21 años",
+        sexo: "Masculino",
+        curp: "VFOZ60704HCHLVNA0",
+        lugar: "Monclova, Coahuila, México",
+        correo: "fernando.olivaresd@udem.edu",
+        fechaNac: "26 de julio de 2004",
+        peso: "80 Kg",
+        altura: "170 cm"
+      },
+      2: {
+        id: "002",
+        nombre: "Fernando",
+        apellidos: "Olivares del Valle",
+        edad: "21 años",
+        sexo: "Masculino",
+        curp: "VFOZ60704HCHLVNB1",
+        lugar: "Monclova, Coahuila, México",
+        correo: "fernando.olivares2@udem.edu",
+        fechaNac: "26 de julio de 2004",
+        peso: "79 Kg",
+        altura: "170 cm"
+      }
+    };
+
+    const viewDashboard = document.getElementById("view-dashboard");
+    const viewDetail = document.getElementById("view-detail");
+    const searchInput = document.getElementById("searchInput");
+    const patientCards = Array.from(
+      document.querySelectorAll(".patient-card")
+    );
+    const btnBackMobile = document.getElementById("btnBackMobile");
+
+    // Elementos del detalle
+    const detailName = document.getElementById("detailName");
+    const detailCode = document.getElementById("detailCode");
+    const detailAvatar = document.getElementById("detailAvatar");
+    const infoNombre = document.getElementById("infoNombre");
+    const infoApellidos = document.getElementById("infoApellidos");
+    const infoEdad = document.getElementById("infoEdad");
+    const infoSexo = document.getElementById("infoSexo");
+    const infoCurp = document.getElementById("infoCurp");
+    const infoLugar = document.getElementById("infoLugar");
+    const infoCorreo = document.getElementById("infoCorreo");
+    const infoFechaNac = document.getElementById("infoFechaNac");
+    const infoPeso = document.getElementById("infoPeso");
+    const infoAltura = document.getElementById("infoAltura");
+
+    function isMobile() {
+      return window.innerWidth < 768;
+    }
+
+    function showDetail(patientId) {
+      const p = patients[patientId];
+      if (!p) return;
+
+      // Rellena los datos
+      detailName.textContent = `${p.id} - ${p.nombre} ${p.apellidos}`;
+      detailCode.textContent = `CURP: ${p.curp}`;
+      detailAvatar.textContent = p.nombre[0] || "P";
+
+      infoNombre.textContent = p.nombre;
+      infoApellidos.textContent = p.apellidos;
+      infoEdad.textContent = p.edad;
+      infoSexo.textContent = p.sexo;
+      infoCurp.textContent = p.curp;
+      infoLugar.textContent = p.lugar;
+      infoCorreo.textContent = p.correo;
+      infoFechaNac.textContent = p.fechaNac;
+      infoPeso.textContent = p.peso;
+      infoAltura.textContent = p.altura;
+
+      if (isMobile()) {
+        viewDashboard.classList.remove("active");
+        viewDetail.classList.add("active");
+      }
+    }
+
+    patientCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        const id = card.getAttribute("data-patient-id");
+        showDetail(id);
+      });
+    });
+
+    // Búsqueda simple por texto
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.toLowerCase().trim();
+      patientCards.forEach((card) => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(query) ? "grid" : "none";
+      });
+    });
+
+    // Botón volver (solo se nota en móvil)
+    btnBackMobile.addEventListener("click", () => {
+      if (isMobile()) {
+        viewDetail.classList.remove("active");
+        viewDashboard.classList.add("active");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // Ajuste cuando se cambia tamaño de pantalla
+    window.addEventListener("resize", () => {
+      if (!isMobile()) {
+        // En escritorio mostramos ambas
+        viewDashboard.classList.add("active");
+        viewDetail.classList.add("active");
+      } else {
+        // En móvil, si ninguna está activa, activamos dashboard
+        if (
+          !viewDashboard.classList.contains("active") &&
+          !viewDetail.classList.contains("active")
+        ) {
+          viewDashboard.classList.add("active");
+        }
+      }
+    });
+
+    // Inicialización: mostrar detalle del primer paciente en escritorio
+    if (!isMobile()) {
+      showDetail("1");
+      viewDetail.classList.add("active");
+      viewDashboard.classList.add("active");
+    }
+  </script>
+</body>
+</html>
